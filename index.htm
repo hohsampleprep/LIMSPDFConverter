@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hohenstein LIMS PDF converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <header class="bg-[#0B192C] text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md shadow-blue-900/40">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">HOHENSTEIN LIMS PDF CONVERTER</h1>
+                    <p class="text-xs text-slate-400 font-medium tracking-wide">Automated Laboratory Protocol Parser Matrix</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">v1.0 Created by ARTHUR LAW</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h2 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4">Document Pipeline</h2>
+                    
+                    <div id="dropzone" class="border-2 border-dashed border-slate-300 bg-slate-50 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/40 transition-all duration-200 group text-center">
+                        <input type="file" id="fileInput" multiple accept=".pdf" class="hidden">
+                        <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-200 text-slate-400 group-hover:text-blue-500 group-hover:border-blue-200 transition-all duration-200 mb-3">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-700">Drop PDF Source Reports</p>
+                        <p class="text-xs text-slate-400 mt-1">or click to open browser utility</p>
+                    </div>
+
+                    <div id="progressContainer" class="hidden mt-6 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-2">
+                            <span id="progressText" class="text-xs font-semibold text-slate-600 truncate max-w-[180px]">Parsing inputs...</span>
+                            <span id="progressPercent" class="text-xs font-bold text-blue-600">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ecoPassportCard" class="hidden bg-white rounded-2xl border border-amber-200 p-6 shadow-sm bg-gradient-to-b from-amber-50/20 to-white space-y-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="p-1.5 bg-amber-100 text-amber-800 rounded-lg">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">ECO PASSPORT Context Verified</h3>
+                            <p class="text-[11px] text-amber-700 font-medium">Assign specific categories to extracted footprints</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-100/60 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-2 shadow-inner">
+                        <span class="text-xs font-bold text-slate-700">Assign to all components:</span>
+                        <select id="globalCatSelect" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 cursor-pointer min-w-[130px]">
+                            <option value="">-- Bulk Cat --</option>
+                            <option value="1">1</option>
+                            <option value="2a">2a</option>
+                            <option value="2b">2b</option>
+                            <option value="3a">3a</option>
+                            <option value="3b">3b</option>
+                        </select>
+                    </div>
+                    
+                    <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-64 overflow-y-auto space-y-3">
+                        <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Component Allocation Tree</p>
+                        <div id="ecoComponentRows" class="space-y-2">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div id="actionsBar" class="hidden bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <p class="text-xs uppercase font-bold tracking-wider text-slate-400">Execution Buffer</p>
+                        </div>
+                        <p class="text-lg font-semibold mt-1">
+                            <span id="recordCount" class="text-blue-400 font-bold">0</span> entries matching active filters.
+                        </p>
+                    </div>
+                    <button id="downloadBtn" class="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm px-5 py-3 rounded-xl shadow-lg shadow-emerald-950/20 transition-all duration-150">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+                        </svg>
+                        <span>Export Matched Set to Excel</span>
+                    </button>
+                </div>
+
+                <div id="previewContainer" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Live Extraction Data Grid Preview</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Real-time localized test-to-component alignment matrices.</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2 min-w-[280px] relative">
+                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Filters:</label>
+                            <div class="relative w-full">
+                                <button id="multiSelectBtn" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left">
+                                    <span id="dropdownLabel" class="truncate pr-2">Loading options...</span>
+                                    <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div id="multiSelectDropdown" class="hidden absolute right-0 mt-1.5 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-3 space-y-2">
+                                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 text-[11px] font-bold text-blue-600">
+                                        <button id="btnSelectAll" type="button" class="hover:text-blue-500 transition">Select All</button>
+                                        <button id="btnClearAll" type="button" class="hover:text-blue-500 text-slate-400 transition">Clear All</button>
+                                    </div>
+                                    <div id="checkboxContainer" class="space-y-1.5 max-h-56 overflow-y-auto pt-1 text-xs text-slate-700">
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50 sticky top-0 z-10 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Report</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Test</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Com</th>
+                                    <th id="tableHeaderCatNo" class="hidden px-6 py-3 text-left text-xs font-bold text-amber-500 uppercase tracking-wider">Cat no.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody" class="divide-y divide-slate-100 bg-white text-xs font-medium text-slate-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressBar = document.getElementById('progressBar');
+        const actionsBar = document.getElementById('actionsBar');
+        const recordCount = document.getElementById('recordCount');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewBody = document.getElementById('previewBody');
+        const tableHeaderCatNo = document.getElementById('tableHeaderCatNo');
+        
+        // ECO PASSPORT Panel Elements
+        const ecoPassportCard = document.getElementById('ecoPassportCard');
+        const globalCatSelect = document.getElementById('globalCatSelect');
+        const ecoComponentRows = document.getElementById('ecoComponentRows');
+        
+        // Multi-Select Filtering Components
+        const multiSelectBtn = document.getElementById('multiSelectBtn');
+        const multiSelectDropdown = document.getElementById('multiSelectDropdown');
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        const dropdownLabel = document.getElementById('dropdownLabel');
+        const btnSelectAll = document.getElementById('btnSelectAll');
+        const btnClearAll = document.getElementById('btnClearAll');
+
+        let masterExtractionList = [];
+        let uniqueKeysTracker = new Set();
+        let selectedTestsSet = new Set();
+        
+        let isEcoPassportDetected = false;
+        let componentCatMapping = {}; 
+
+        // --- TEST NAME CONVERSION DICTIONARY ---
+        const testNameMap = {
+            "(APEO) Alkylphenols and alkylphenolethoxylates": "APEO",
+            "(Azo) Carcinogenic arylamines": "Azo Dye",
+            "(Azo) Free, cleavable and carcinogenic arylamines, free and cleavable aniline": "Azo Dye",
+            "Organic tin compounds": "Organotin",
+            "(Carrier) Chlorinated benzenes and toluenes": "COC",
+            "Allergenic, carcinogenic and other banned colorants": "C&D Dye",
+            "(Allerg.) Allergenic, carcinogenic and other banned colorants": "C&D Dye",
+            "Extractable (heavy) metals": "Extractable HM",
+            "(CP textile) Chlorinated phenols incl.\nOPP": "PCP",
+            "(OTC) Organic tin compounds": "Organotin",
+            "UV-stabilizers": "UV",
+            "(SCCP, MCCP) Chlorinated paraffins": "SCCP",
+            "(PFC/PFAS - HPLC only) Per- and polyｬＶorinated compounds/per- and polyｬＶoroalkyl": "PFAS",
+            "(PFC/PFAS - GC only) Per- and polyｬＶorinated compounds/per- and polyｬＶoroalkyl": "PFAS GC",
+            "Permethrin": "Permethrin",
+            "(FA) Formaldehyde": "Formaldehyde",
+            "Quinoline": "Quinoline",
+            "(HM) Total content of (heavy) metals (Colorants)": "TX HM",
+            "(CP textile) Chlorinated phenols incl. OPP": "PCP",
+            "(Azo) Arylamines + Aniline": "Azo Dye",
+            "pH-Value (with skin contact)": "pH Value",
+            "(PCP) Chlorinated phenols": "PCP",
+            "(PFC/PFAS) Per- and polyfl uorinated compounds/per- and polyfl uoroalkyl substances": "PFAS",
+            "(extr. HM) Extractable (heavy) metals": "Extractable HM",
+            "(CP) Chlorinated phenols": "PCP",
+            "(Azo) Carcinogenic arylamines and cleavable and free available aniline": "Azo Dye",
+            "(PAH - textile) Polycyclic aromatic hydrocarbons": "PAH"
+        };
+
+        // Pipeline Action Listeners
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-blue-500', 'bg-blue-50/40'); });
+        dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('border-blue-500', 'bg-blue-50/40'); });
+        dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('border-blue-500', 'bg-blue-50/40'); handleFiles(e.dataTransfer.files); });
+
+        // Multiselect Event Listeners
+        multiSelectBtn.addEventListener('click', (e) => { e.stopPropagation(); multiSelectDropdown.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!multiSelectDropdown.contains(e.target) && e.target !== multiSelectBtn) multiSelectDropdown.classList.add('hidden'); });
+
+        btnSelectAll.addEventListener('click', () => {
+            checkboxContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = true; selectedTestsSet.add(cb.value); });
+            updateDropdownLabel(); renderDataGrid();
+        });
+        btnClearAll.addEventListener('click', () => {
+            checkboxContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; selectedTestsSet.delete(cb.value); });
+            updateDropdownLabel(); renderDataGrid();
+        });
+
+        // Event Listener for the Global Bulk Choose Dropdown
+        globalCatSelect.addEventListener('change', (e) => {
+            const bulkSelectedValue = e.target.value;
+            
+            // Bulk update the backend alignment dictionary
+            for (let compNum in componentCatMapping) {
+                componentCatMapping[compNum] = bulkSelectedValue;
+            }
+            
+            // Synchronize all visual choose boxes inside the layout tree rows
+            ecoComponentRows.querySelectorAll('select').forEach(selectNode => {
+                selectNode.value = bulkSelectedValue;
+            });
+            
+            // Re-render live visualization preview output context
+            renderDataGrid();
+        });
+
+        async function handleFiles(files) {
+            const pdfFiles = Array.from(files).filter(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf'));
+            if (pdfFiles.length === 0) return;
+
+            // Reset engine runtime tracking contexts
+            masterExtractionList = [];
+            uniqueKeysTracker.clear();
+            selectedTestsSet.clear();
+            componentCatMapping = {};
+            isEcoPassportDetected = false;
+            
+            previewBody.innerHTML = '';
+            checkboxContainer.innerHTML = '';
+            ecoComponentRows.innerHTML = '';
+            globalCatSelect.value = ''; // Clear bulk status
+            ecoPassportCard.classList.add('hidden');
+            tableHeaderCatNo.classList.add('hidden');
+
+            progressContainer.classList.remove('hidden');
+            actionsBar.classList.add('hidden');
+            previewContainer.classList.add('hidden');
+
+            const uniqueFilterTests = new Set();
+            const collectedComponentNumbers = new Set();
+
+            for (let index = 0; index < pdfFiles.length; index++) {
+                const file = pdfFiles[index];
+                const currentPercentage = Math.round(((index) / pdfFiles.length) * 100);
+                progressText.innerText = `${file.name}`;
+                progressPercent.innerText = `${currentPercentage}%`;
+                progressBar.style.width = `${currentPercentage}%`;
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    
+                    let reportNoPatternStr = file.name.replace(/\.pdf$/i, '').trim();
+
+                    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                        const page = await pdfDoc.getPage(pageNum);
+                        const content = await page.getTextContent();
+                        
+                        let horizontalLineGroups = {};
+                        for (let textItem of content.items) {
+                            if (!textItem.str || textItem.str.trim() === "") continue;
+                            let yCoord = Math.round(textItem.transform[5]);
+                            let assigned = false;
+                            
+                            for (let groupedY in horizontalLineGroups) {
+                                if (Math.abs(groupedY - yCoord) < 5) {
+                                    horizontalLineGroups[groupedY].push(textItem);
+                                    assigned = true;
+                                    break;
+                                }
+                            }
+                            if (!assigned) {
+                                horizontalLineGroups[yCoord] = [textItem];
+                            }
+                        }
+
+                    let sortedYCoords = Object.keys(horizontalLineGroups).map(Number).sort((a, b) => b - a);
+                    let cleanPageLines = [];
+                    for (let y of sortedYCoords) {
+                        horizontalLineGroups[y].sort((a, b) => a.transform[4] - b.transform[4]);
+                        let integratedLineText = horizontalLineGroups[y].map(item => item.str).join(" ").replace(/\s+/g, " ").trim();
+                        if (integratedLineText) {
+                            cleanPageLines.push(integratedLineText);
+                        }
+                    }
+
+                    const fullPageTextDump = cleanPageLines.join(" ");
+                    if (fullPageTextDump.toUpperCase().includes("ECO PASSPORT") || fullPageTextDump.toUpperCase().includes("OEKO-TEX")) {
+                        isEcoPassportDetected = true;
+                    }
+
+                    for (let line of cleanPageLines) {
+                        let reportHeaderRegexMatch = line.match(/LIMS[- ](\d{2}\.\d+)/i);
+                        if (reportHeaderRegexMatch) {
+                            reportNoPatternStr = reportHeaderRegexMatch[1].trim();
+                            break;
+                        }
+                    }
+
+                    let targetTestName = "";
+                    let limsBlockIndex = -1;
+
+                    for (let i = 0; i < cleanPageLines.length; i++) {
+                        if (cleanPageLines[i].includes("LIMS-Order")) {
+                            limsBlockIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (limsBlockIndex !== -1 && limsBlockIndex + 1 < cleanPageLines.length) {
+                        targetTestName = cleanPageLines[limsBlockIndex + 1];
+                    } else {
+                        for (let i = 0; i < cleanPageLines.length; i++) {
+                            if (cleanPageLines[i].includes("Material")) {
+                                if (i - 1 >= 0) targetTestName = cleanPageLines[i - 1];
+                                break;
+                            }
+                        }
+                    }
+
+                    targetTestName = targetTestName.trim();
+                    
+                    // Apply test name standardization map lookup
+                    if (testNameMap[targetTestName]) {
+                        targetTestName = testNameMap[targetTestName];
+                    }
+
+                    let isCompositeFramework = cleanPageLines.some(l => l.includes("Composite"));
+                    let materialHeaderIndex = -1;
+                    
+                    for (let i = 0; i < cleanPageLines.length; i++) {
+                        if (cleanPageLines[i].includes("Material")) {
+                            materialHeaderIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (materialHeaderIndex !== -1) {
+                        for (let i = materialHeaderIndex + 1; i < cleanPageLines.length; i++) {
+                            let targetLine = cleanPageLines[i];
+                            let indexRegexMatch = targetLine.match(/^(\d+(?:\.\d+)*)\s+(.*)/);
+                            if (indexRegexMatch) {
+                                let compIndexId = indexRegexMatch[1];
+                                let textualRemainder = indexRegexMatch[2];
+                                let processedComponentNum = compIndexId;
+
+                                if (isCompositeFramework) {
+                                    let compositeMarkerRegexMatch = textualRemainder.match(/\b(C\d+)\b/);
+                                    if (compositeMarkerRegexMatch) {
+                                        processedComponentNum = compositeMarkerRegexMatch[1];
+                                    }
+                                }
+
+                                if (targetTestName && processedComponentNum) {
+                                    let uniqueFingerprint = `${reportNoPatternStr}|${targetTestName}|${processedComponentNum}`;
+                                    if (!uniqueKeysTracker.has(uniqueFingerprint)) {
+                                        uniqueKeysTracker.add(uniqueFingerprint);
+                                        masterExtractionList.push({
+                                            reportNo: reportNoPatternStr,
+                                            testName: targetTestName,
+                                            compNum: processedComponentNum
+                                        });
+                                        uniqueFilterTests.add(targetTestName);
+                                        collectedComponentNumbers.add(processedComponentNum);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Extraction matrix failure on selected file: ", file.name, err);
+            }
+        }
+
+        progressBar.style.width = "100%";
+        progressPercent.innerText = "100%";
+        progressText.innerText = "Data parsing routines successfully complete.";
+
+        // If ECO PASSPORT metadata layout was detected, render the interactive allocation controls
+        if (isEcoPassportDetected) {
+            ecoPassportCard.classList.remove('hidden');
+            tableHeaderCatNo.classList.remove('hidden');
+            
+            // Sort array elements in strict ascending alphanumeric order
+            const sortedComps = Array.from(collectedComponentNumbers).sort((a, b) => {
+                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            sortedComps.forEach(compNum => {
+                componentCatMapping[compNum] = ""; 
+
+                const uniqueRowContainer = document.createElement('div');
+                uniqueRowContainer.className = "flex items-center justify-between space-x-2 bg-white border border-slate-200 rounded-lg p-2 shadow-sm text-xs";
+                uniqueRowContainer.innerHTML = `
+                    <span class="font-mono bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">${compNum}</span>
+                    <div class="relative flex-1 max-w-[140px]">
+                        <select class="w-full bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
+                            <option value="">-- Select Cat --</option>
+                            <option value="1">1</option>
+                            <option value="2a">2a</option>
+                            <option value="2b">2b</option>
+                            <option value="3a">3a</option>
+                            <option value="3b">3b</option>
+                        </select>
+                    </div>
+                `;
+
+                const innerSelectEl = uniqueRowContainer.querySelector('select');
+                innerSelectEl.addEventListener('change', (e) => {
+                    componentCatMapping[compNum] = e.target.value;
+                    // Reset global view index if user deviates from uniform bulk setting parameters
+                    globalCatSelect.value = "";
+                    renderDataGrid();
+                });
+
+                ecoComponentRows.appendChild(uniqueRowContainer);
+            });
+        }
+
+        // Build dynamic filtering selection nodes configurations layout
+        Array.from(uniqueFilterTests).sort().forEach(testItemKey => {
+            selectedTestsSet.add(testItemKey);
+
+            const labelWrapper = document.createElement('label');
+            labelWrapper.className = "flex items-start space-x-2.5 p-1 rounded hover:bg-slate-50 cursor-pointer transition-colors";
+            labelWrapper.innerHTML = `
+                <input type="checkbox" value="${testItemKey}" checked class="rounded text-blue-600 border-slate-300 focus:ring-blue-500 mt-0.5 h-3.5 w-3.5">
+                <span class="text-[11px] font-medium text-slate-700 leading-tight select-none">${testItemKey}</span>
+            `;
+
+            labelWrapper.querySelector('input').addEventListener('change', (e) => {
+                if (e.target.checked) selectedTestsSet.add(testItemKey);
+                else selectedTestsSet.delete(testItemKey);
+                updateDropdownLabel(); renderDataGrid();
+            });
+
+            checkboxContainer.appendChild(labelWrapper);
+        });
+
+        updateDropdownLabel();
+        renderDataGrid();
+    }
+
+    function updateDropdownLabel() {
+        const checkedCount = selectedTestsSet.size;
+        const totalCheckboxes = checkboxContainer.querySelectorAll('input[type="checkbox"]').length;
+        if (checkedCount === 0) {
+            dropdownLabel.innerText = "No tests selected (Empty)";
+            dropdownLabel.className = "truncate pr-2 text-slate-400 italic";
+        } else if (checkedCount === totalCheckboxes) {
+            dropdownLabel.innerText = "All Extracted Tests Selected";
+            dropdownLabel.className = "truncate pr-2 text-slate-700 font-semibold";
+        } else {
+            dropdownLabel.innerText = `${checkedCount} of ${totalCheckboxes} Selected`;
+            dropdownLabel.className = "truncate pr-2 text-blue-600 font-semibold";
+        }
+    }
+
+    function renderDataGrid() {
+        previewBody.innerHTML = '';
+        let counterMatchCount = 0;
+
+        masterExtractionList.forEach(rec => {
+            if (!selectedTestsSet.has(rec.testName)) return;
+
+            counterMatchCount++;
+            const tableRow = document.createElement('tr');
+            tableRow.className = "hover:bg-slate-50 transition-colors duration-150";
+            
+            let conditionalCatNoTd = "";
+            if (isEcoPassportDetected) {
+                const mappedCatValue = componentCatMapping[rec.compNum] || "";
+                conditionalCatNoTd = `<td class="px-6 py-4 text-slate-900 font-semibold"><span class="${mappedCatValue ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-400 border-slate-200'} border px-2 py-0.5 rounded text-[11px]}">${mappedCatValue || 'Unassigned'}</span></td>`;
+            }
+
+            tableRow.innerHTML = `
+                <td class="px-6 py-4 text-slate-900 font-semibold tracking-tight">${rec.reportNo}</td>
+                <td class="px-6 py-4 text-slate-600">${rec.testName}</td>
+                <td class="px-6 py-4"><span class="inline-flex items-center bg-blue-50 text-blue-700 font-mono px-2.5 py-1 rounded-md text-xs font-bold border border-blue-100">${rec.compNum}</span></td>
+                ${conditionalCatNoTd}
+            `;
+            previewBody.appendChild(tableRow);
+        });
+
+        recordCount.innerText = counterMatchCount;
+
+        if (masterExtractionList.length > 0) {
+            actionsBar.classList.remove('hidden');
+            previewContainer.classList.remove('hidden');
+        }
+    }
+
+    // Spreadsheet Engine Download Logic
+    downloadBtn.addEventListener('click', () => {
+        const filteredTargetList = masterExtractionList.filter(item => selectedTestsSet.has(item.testName));
+        if (filteredTargetList.length === 0) return;
+
+        const structuredExportRows = filteredTargetList.map(item => {
+            let dynamicDataRow = {
+                "Report#": item.reportNo,
+                "Test": item.testName,
+                "T#": item.compNum
+            };
+            
+            if (isEcoPassportDetected) {
+                dynamicDataRow["Cat no."] = componentCatMapping[item.compNum] || "";
+            }
+            return dynamicDataRow;
+        });
+
+        const excelWorksheet = XLSX.utils.json_to_sheet(structuredExportRows);
+        const excelWorkbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(excelWorkbook, excelWorksheet, "LIMS Extract");
+
+        const columnWidths = {};
+        structuredExportRows.forEach(row => {
+            Object.keys(row).forEach(headerKey => {
+                const cellStringLength = String(row[headerKey] || '').length;
+                columnWidths[headerKey] = Math.max(columnWidths[headerKey] || headerKey.length, cellStringLength);
+            });
+        });
+        excelWorksheet['!cols'] = Object.keys(columnWidths).map(key => ({ wch: columnWidths[key] + 4 }));
+
+        const uniqueReportIdsInSet = Array.from(new Set(filteredTargetList.map(item => item.reportNo)));
+        let outputFilename = "Hohenstein_Extract_label";
+        if (uniqueReportIdsInSet.length === 1) {
+            outputFilename = `${uniqueReportIdsInSet[0]}_label`;
+        } else if (uniqueReportIdsInSet.length > 1) {
+            outputFilename = `${uniqueReportIdsInSet[0]}_multi_label`;
+        }
+
+        XLSX.writeFile(excelWorkbook, `${outputFilename}.xlsx`);
+    });
+</script>
+</body>
+</html>
