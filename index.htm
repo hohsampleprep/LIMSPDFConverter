@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hohenstein LIMS PDF converter</title>
+    <title>Hohenstein LIMS PDF Converter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">v1.0 Created by ARTHUR LAW</span>
+                <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">v1.4 Updated</span>
             </div>
         </div>
     </header>
@@ -93,8 +93,7 @@
                     
                     <div class="border border-slate-200 rounded-xl bg-slate-50 p-3 max-h-64 overflow-y-auto space-y-3">
                         <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400">Component Allocation Tree</p>
-                        <div id="ecoComponentRows" class="space-y-2">
-                            </div>
+                        <div id="ecoComponentRows" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -140,8 +139,7 @@
                                         <button id="btnSelectAll" type="button" class="hover:text-blue-500 transition">Select All</button>
                                         <button id="btnClearAll" type="button" class="hover:text-blue-500 text-slate-400 transition">Clear All</button>
                                     </div>
-                                    <div id="checkboxContainer" class="space-y-1.5 max-h-56 overflow-y-auto pt-1 text-xs text-slate-700">
-                                        </div>
+                                    <div id="checkboxContainer" class="space-y-1.5 max-h-56 overflow-y-auto pt-1 text-xs text-slate-700"></div>
                                 </div>
                             </div>
                         </div>
@@ -155,10 +153,10 @@
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Test</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Com</th>
                                     <th id="tableHeaderCatNo" class="hidden px-6 py-3 text-left text-xs font-bold text-amber-500 uppercase tracking-wider">Cat no.</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">QR</th>
                                 </tr>
                             </thead>
-                            <tbody id="previewBody" class="divide-y divide-slate-100 bg-white text-xs font-medium text-slate-700">
-                                </tbody>
+                            <tbody id="previewBody" class="divide-y divide-slate-100 bg-white text-xs font-medium text-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -205,33 +203,103 @@
 
         // --- TEST NAME CONVERSION DICTIONARY ---
         const testNameMap = {
+            "(APEOs) Alkylphenols and alkylphenolethoxylates": "APEO",
             "(APEO) Alkylphenols and alkylphenolethoxylates": "APEO",
+            "(APEOS) Alkylphenols & ethoxylates": "APEO",
+            "undiluted (APEOS) Alkylphenols": "APEO",
             "(Azo) Carcinogenic arylamines": "Azo Dye",
             "(Azo) Free, cleavable and carcinogenic arylamines, free and cleavable aniline": "Azo Dye",
+            "(Azo) Arylamines + Aniline": "Azo Dye",
+            "(Azo) Carcinogenic arylamines and cleavable and free available aniline": "Azo Dye",
             "Organic tin compounds": "Organotin",
+            "(OTC) Organic tin compounds": "Organotin",
             "(Carrier) Chlorinated benzenes and toluenes": "COC",
+            "(Carrier) Chlorinated benzenes/toluenes": "COC",
             "Allergenic, carcinogenic and other banned colorants": "C&D Dye",
             "(Allerg.) Allergenic, carcinogenic and other banned colorants": "C&D Dye",
             "Extractable (heavy) metals": "Extractable HM",
+            "(extr. HM) Extractable (heavy) metals": "Extractable HM",
+            "(HM) Total content of (heavy) metals (Colorants)": "TX HM",
+            "(HM) Heavy Metals (Colorants)": "TX HM",
             "(CP textile) Chlorinated phenols incl.\nOPP": "PCP",
-            "(OTC) Organic tin compounds": "Organotin",
+            "(CP textile) Chlorinated phenols incl. OPP": "PCP",
+            "(PCP) Chlorinated phenols": "PCP",
+            "(CP) Chlorinated phenols": "PCP",
             "UV-stabilizers": "UV",
             "(SCCP, MCCP) Chlorinated paraffins": "SCCP",
-            "(PFC/PFAS - HPLC only) Per- and polyｬＶorinated compounds/per- and polyｬＶoroalkyl": "PFAS",
-            "(PFC/PFAS - GC only) Per- and polyｬＶorinated compounds/per- and polyｬＶoroalkyl": "PFAS GC",
+            "(PFC/PFAS - HPLC only) Per- and polyfluorinated compounds/per- and polyfluoroalkyl": "PFAS",
+            "(PFC/PFAS - GC only) Per- and polyfluorinated compounds/per- and polyfluoroalkyl": "PFAS GC",
+            "(PFC/PFAS) Per- and polyfluorinated compounds/per- and polyfluoroalkyl substances": "PFAS",
+            "(PFC/PFAS) Polyfluorinated compounds": "PFAS",
             "Permethrin": "Permethrin",
             "(FA) Formaldehyde": "Formaldehyde",
+            "undiluted (FA) Formaldehyde": "Formaldehyde",
             "Quinoline": "Quinoline",
-            "(HM) Total content of (heavy) metals (Colorants)": "TX HM",
-            "(CP textile) Chlorinated phenols incl. OPP": "PCP",
-            "(Azo) Arylamines + Aniline": "Azo Dye",
             "pH-Value (with skin contact)": "pH Value",
-            "(PCP) Chlorinated phenols": "PCP",
-            "(PFC/PFAS) Per- and polyfl uorinated compounds/per- and polyfl uoroalkyl substances": "PFAS",
-            "(extr. HM) Extractable (heavy) metals": "Extractable HM",
-            "(CP) Chlorinated phenols": "PCP",
-            "(Azo) Carcinogenic arylamines and cleavable and free available aniline": "Azo Dye",
-            "(PAH - textile) Polycyclic aromatic hydrocarbons": "PAH"
+            "(PAH - textile) Polycyclic aromatic hydrocarbons": "PAH",
+            "(PAH) Polycyclic aromatic hydrocarbons": "PAH",
+            "Siloxanes / Phthalates": "Siloxanes / Phthalates",
+            "Bisphenols": "Bisphenols",
+            "Phenol": "Phenol",
+            "undiluted Phenol": "Phenol",
+            "(TPP) Triphenylphosphat": "TPP",
+            "Flame retardant products": "Flame Retardants",
+            "(VOC) Chlorinated solvents / Residues": "VOC",
+            "undiluted (VOC) Chlorinated solvents": "VOC",
+            "Solvent residues": "Solvent residues",
+            "(TF) Total fluorine content": "Total Fluorine",
+            "(NMA) N-(hydroxymethyl)acrylamide": "NMA"
+        };
+
+        // --- QR ABBREVIATION DICTIONARY ---
+        const qrAbbrMap = {
+            "APEO": "APO",
+            "Azo Dye": "AZO",
+            "Organotin": "OTC",
+            "COC": "COC",
+            "C&D Dye": "ADM",
+            "Extractable HM": "HEI",
+            "PCP": "PCP",
+            "Phthalate": "PSU",
+            "Siloxanes / Phthalates": "SIL",
+            "Siloxane": "PSU",
+            "Bisphenols": "BIS",
+            "BPA": "PSU",
+            "UV": "PSU",
+            "Flame Retardant LC": "FLL",
+            "Flame Retardant GC": "FLG",
+            "Flame Retardants": "FLM",
+            "SCCP": "CPS",
+            "PFC LC": "PFL",
+            "PFAS": "PFL",
+            "PFAS GC": "FLG",
+            "DMFu": "Dfu",
+            "Glyphosate": "Gly",
+            "Nitrosamine": "NST",
+            "Permethrin": "Per",
+            "Extractable Heavy Metals (Leather)": "HEL",
+            "Formaldehyde": "Fql",
+            "Quinoline": "QuL",
+            "VOC": "VLE",
+            "Solvent residues": "SOL",
+            "ADCA": "ACA",
+            "Glyoxal": "Gox",
+            "Total Heavy Metal": "HTI",
+            "TX HM": "HTI",
+            "Phenol": "PHL",
+            "PAH": "PAH",
+            "pH Value": "pHV",
+            "TPP": "TPP",
+            "Total Fluorine": "TFC",
+            "NMA": "NMA"
+        };
+
+        // --- PRIORITY ABBREVIATION DICTIONARY ---
+        const priorityMap = {
+            "STANDARD": "a",
+            "EXPRESS": "b",
+            "URGENT": "c",
+            "TOP URGENT": "d"
         };
 
         // Pipeline Action Listeners
@@ -258,17 +326,14 @@
         globalCatSelect.addEventListener('change', (e) => {
             const bulkSelectedValue = e.target.value;
             
-            // Bulk update the backend alignment dictionary
             for (let compNum in componentCatMapping) {
                 componentCatMapping[compNum] = bulkSelectedValue;
             }
             
-            // Synchronize all visual choose boxes inside the layout tree rows
             ecoComponentRows.querySelectorAll('select').forEach(selectNode => {
                 selectNode.value = bulkSelectedValue;
             });
             
-            // Re-render live visualization preview output context
             renderDataGrid();
         });
 
@@ -276,17 +341,18 @@
             const pdfFiles = Array.from(files).filter(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith('.pdf'));
             if (pdfFiles.length === 0) return;
 
-            // Reset engine runtime tracking contexts
             masterExtractionList = [];
             uniqueKeysTracker.clear();
             selectedTestsSet.clear();
             componentCatMapping = {};
             isEcoPassportDetected = false;
             
+            let labSeqMap = {};
+
             previewBody.innerHTML = '';
             checkboxContainer.innerHTML = '';
             ecoComponentRows.innerHTML = '';
-            globalCatSelect.value = ''; // Clear bulk status
+            globalCatSelect.value = '';
             ecoPassportCard.classList.add('hidden');
             tableHeaderCatNo.classList.add('hidden');
 
@@ -332,264 +398,346 @@
                             }
                         }
 
-                    let sortedYCoords = Object.keys(horizontalLineGroups).map(Number).sort((a, b) => b - a);
-                    let cleanPageLines = [];
-                    for (let y of sortedYCoords) {
-                        horizontalLineGroups[y].sort((a, b) => a.transform[4] - b.transform[4]);
-                        let integratedLineText = horizontalLineGroups[y].map(item => item.str).join(" ").replace(/\s+/g, " ").trim();
-                        if (integratedLineText) {
-                            cleanPageLines.push(integratedLineText);
+                        let sortedYCoords = Object.keys(horizontalLineGroups).map(Number).sort((a, b) => b - a);
+                        let cleanPageLines = [];
+                        for (let y of sortedYCoords) {
+                            horizontalLineGroups[y].sort((a, b) => a.transform[4] - b.transform[4]);
+                            let integratedLineText = horizontalLineGroups[y].map(item => item.str).join(" ").replace(/\s+/g, " ").trim();
+                            if (integratedLineText) {
+                                cleanPageLines.push(integratedLineText);
+                            }
                         }
-                    }
 
-                    const fullPageTextDump = cleanPageLines.join(" ");
-                    if (fullPageTextDump.toUpperCase().includes("ECO PASSPORT") || fullPageTextDump.toUpperCase().includes("OEKO-TEX")) {
-                        isEcoPassportDetected = true;
-                    }
-
-                    for (let line of cleanPageLines) {
-                        let reportHeaderRegexMatch = line.match(/LIMS[- ](\d{2}\.\d+)/i);
-                        if (reportHeaderRegexMatch) {
-                            reportNoPatternStr = reportHeaderRegexMatch[1].trim();
-                            break;
+                        const fullPageTextDump = cleanPageLines.join(" ");
+                        if (fullPageTextDump.toUpperCase().includes("ECO PASSPORT") || fullPageTextDump.toUpperCase().includes("OEKO-TEX")) {
+                            isEcoPassportDetected = true;
                         }
-                    }
 
-                    let targetTestName = "";
-                    let limsBlockIndex = -1;
+                        // Parse Priority
+                        let extractedPriority = "STANDARD";
+                        if (fullPageTextDump.includes("TOP URGENT")) extractedPriority = "TOP URGENT";
+                        else if (fullPageTextDump.includes("URGENT")) extractedPriority = "URGENT";
+                        else if (fullPageTextDump.includes("EXPRESS")) extractedPriority = "EXPRESS";
 
-                    for (let i = 0; i < cleanPageLines.length; i++) {
-                        if (cleanPageLines[i].includes("LIMS-Order")) {
-                            limsBlockIndex = i;
-                            break;
-                        }
-                    }
-
-                    if (limsBlockIndex !== -1 && limsBlockIndex + 1 < cleanPageLines.length) {
-                        targetTestName = cleanPageLines[limsBlockIndex + 1];
-                    } else {
-                        for (let i = 0; i < cleanPageLines.length; i++) {
-                            if (cleanPageLines[i].includes("Material")) {
-                                if (i - 1 >= 0) targetTestName = cleanPageLines[i - 1];
+                        // --- Extract Lab No from Bottom-Left Corner for EACH page ---
+                        let bottomYCoords = sortedYCoords.filter(y => y < 250).sort((a, b) => a - b); 
+                        let bottomLabMatch = null;
+                        
+                        for (let y of bottomYCoords) {
+                            let bottomLineText = horizontalLineGroups[y].map(item => item.str).join(" ").replace(/\s+/g, " ").trim();
+                            let labMatch = bottomLineText.match(/LAB[- ]?(\d{2}\.[\d]+)/i) || bottomLineText.match(/LAB[- ]?([\d\.]+)/i);
+                            if (labMatch) {
+                                bottomLabMatch = labMatch;
                                 break;
                             }
                         }
-                    }
 
-                    targetTestName = targetTestName.trim();
-                    
-                    // Apply test name standardization map lookup
-                    if (testNameMap[targetTestName]) {
-                        targetTestName = testNameMap[targetTestName];
-                    }
-
-                    let isCompositeFramework = cleanPageLines.some(l => l.includes("Composite"));
-                    let materialHeaderIndex = -1;
-                    
-                    for (let i = 0; i < cleanPageLines.length; i++) {
-                        if (cleanPageLines[i].includes("Material")) {
-                            materialHeaderIndex = i;
-                            break;
+                        if (!bottomLabMatch) {
+                            for (let line of cleanPageLines) {
+                                let labMatch = line.match(/LAB[- ]?(\d{2}\.[\d]+)/i) || line.match(/LAB[- ]?([\d\.]+)/i);
+                                if (labMatch) {
+                                    bottomLabMatch = labMatch;
+                                    break;
+                                }
+                            }
                         }
-                    }
 
-                    if (materialHeaderIndex !== -1) {
-                        for (let i = materialHeaderIndex + 1; i < cleanPageLines.length; i++) {
-                            let targetLine = cleanPageLines[i];
-                            let indexRegexMatch = targetLine.match(/^(\d+(?:\.\d+)*)\s+(.*)/);
-                            if (indexRegexMatch) {
-                                let compIndexId = indexRegexMatch[1];
-                                let textualRemainder = indexRegexMatch[2];
-                                let processedComponentNum = compIndexId;
+                        let extractedLabNo = "";
+                        if (bottomLabMatch) {
+                            let rawDigits = bottomLabMatch[1].replace(/\D/g, '');
+                            if (rawDigits.length >= 6) {
+                                extractedLabNo = rawDigits.slice(-6);
+                            }
+                        }
 
-                                if (isCompositeFramework) {
-                                    let compositeMarkerRegexMatch = textualRemainder.match(/\b(C\d+)\b/);
-                                    if (compositeMarkerRegexMatch) {
-                                        processedComponentNum = compositeMarkerRegexMatch[1];
+                        // Extract Report No
+                        for (let line of cleanPageLines) {
+                            let reportHeaderRegexMatch = line.match(/LIMS[- ](\d{2}\.\d+)/i);
+                            if (reportHeaderRegexMatch) {
+                                reportNoPatternStr = reportHeaderRegexMatch[1].trim();
+                            }
+                        }
+
+                        // --- Robust Test Name Extraction ---
+                        let targetTestName = "";
+
+                        for (let line of cleanPageLines) {
+                            let trimmed = line.trim();
+                            for (let dictKey in testNameMap) {
+                                if (trimmed.toLowerCase() === dictKey.toLowerCase() || 
+                                    trimmed.replace(/\s+/g, ' ').toLowerCase() === dictKey.replace(/\s+/g, ' ').toLowerCase()) {
+                                    targetTestName = testNameMap[dictKey];
+                                    break;
+                                }
+                            }
+                            if (targetTestName) break;
+                        }
+
+                        if (!targetTestName) {
+                            let limsBlockIndex = cleanPageLines.findIndex(l => l.includes("LIMS-Order"));
+                            if (limsBlockIndex !== -1 && limsBlockIndex + 1 < cleanPageLines.length) {
+                                targetTestName = cleanPageLines[limsBlockIndex + 1].trim();
+                            }
+                        }
+
+                        if (!targetTestName) {
+                            let materialHeaderIndex = cleanPageLines.findIndex(l => l.includes("Material"));
+                            if (materialHeaderIndex > 0) {
+                                for (let k = materialHeaderIndex - 1; k >= 0; k--) {
+                                    let candidate = cleanPageLines[k].trim();
+                                    if (candidate && !candidate.startsWith("Business area:") && !candidate.startsWith("Priority:") && !candidate.includes("OEKO-TEX")) {
+                                        targetTestName = candidate;
+                                        break;
                                     }
                                 }
+                            }
+                        }
 
-                                if (targetTestName && processedComponentNum) {
-                                    let uniqueFingerprint = `${reportNoPatternStr}|${targetTestName}|${processedComponentNum}`;
-                                    if (!uniqueKeysTracker.has(uniqueFingerprint)) {
-                                        uniqueKeysTracker.add(uniqueFingerprint);
-                                        masterExtractionList.push({
-                                            reportNo: reportNoPatternStr,
-                                            testName: targetTestName,
-                                            compNum: processedComponentNum
-                                        });
-                                        uniqueFilterTests.add(targetTestName);
-                                        collectedComponentNumbers.add(processedComponentNum);
+                        if (targetTestName) {
+                            if (testNameMap[targetTestName]) {
+                                targetTestName = testNameMap[targetTestName];
+                            } else {
+                                for (let dictKey in testNameMap) {
+                                    if (targetTestName.toLowerCase() === dictKey.toLowerCase()) {
+                                        targetTestName = testNameMap[dictKey];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        let isCompositeFramework = cleanPageLines.some(l => l.includes("Composite"));
+                        let materialHeaderIndex = -1;
+                        
+                        for (let i = 0; i < cleanPageLines.length; i++) {
+                            if (cleanPageLines[i].includes("Material")) {
+                                materialHeaderIndex = i;
+                                break;
+                            }
+                        }
+
+                        if (materialHeaderIndex !== -1) {
+                            for (let i = materialHeaderIndex + 1; i < cleanPageLines.length; i++) {
+                                let targetLine = cleanPageLines[i];
+                                let indexRegexMatch = targetLine.match(/^(\d+(?:\.\d+)*)\s+(.*)/);
+                                if (indexRegexMatch) {
+                                    let compIndexId = indexRegexMatch[1];
+                                    let textualRemainder = indexRegexMatch[2];
+                                    let processedComponentNum = compIndexId;
+
+                                    if (isCompositeFramework) {
+                                        let compositeMarkerRegexMatch = textualRemainder.match(/\b(C\d+)\b/i);
+                                        if (compositeMarkerRegexMatch) {
+                                            processedComponentNum = compositeMarkerRegexMatch[1].toUpperCase();
+                                        }
+                                    }
+
+                                    if (targetTestName && processedComponentNum) {
+                                        let uniqueFingerprint = `${reportNoPatternStr}|${targetTestName}|${processedComponentNum}`;
+                                        if (!uniqueKeysTracker.has(uniqueFingerprint)) {
+                                            uniqueKeysTracker.add(uniqueFingerprint);
+
+                                            let labNumStr = extractedLabNo || "000000";
+
+                                            // --- CONTINUOUS SEQUENCE PER LAB NO ---
+                                            if (!labSeqMap[labNumStr]) {
+                                                labSeqMap[labNumStr] = 1;
+                                            } else {
+                                                labSeqMap[labNumStr] += 1;
+                                            }
+
+                                            let tableRowSequence = labSeqMap[labNumStr];
+                                            let seqNoStr = String(tableRowSequence).padStart(3, '0');
+
+                                            // Determine Sample Type (C for Composite, S for Single)
+                                            let sampleTypeStr = (isCompositeFramework || /^C\d+/i.test(processedComponentNum)) ? "C" : "S";
+                                            let qrAbbr = qrAbbrMap[targetTestName] || targetTestName.substring(0, 3).toUpperCase();
+                                            let prioCode = priorityMap[extractedPriority] || "a";
+                                            let formattedReportNo = reportNoPatternStr ? reportNoPatternStr.replace(/\./g, '-') : '';
+
+                                            let qrCodeInfo = `${qrAbbr}${labNumStr}I${sampleTypeStr}${seqNoStr}${prioCode}`;
+                                            if (formattedReportNo) {
+                                                qrCodeInfo += `-${formattedReportNo}`;
+                                            }
+
+                                            masterExtractionList.push({
+                                                reportNo: reportNoPatternStr,
+                                                testName: targetTestName,
+                                                compNum: processedComponentNum,
+                                                qrCodeInfo: qrCodeInfo
+                                            });
+
+                                            uniqueFilterTests.add(targetTestName);
+                                            collectedComponentNumbers.add(processedComponentNum);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } catch (err) {
+                    console.error("Extraction matrix failure on selected file: ", file.name, err);
                 }
-            } catch (err) {
-                console.error("Extraction matrix failure on selected file: ", file.name, err);
             }
-        }
 
-        progressBar.style.width = "100%";
-        progressPercent.innerText = "100%";
-        progressText.innerText = "Data parsing routines successfully complete.";
+            progressBar.style.width = "100%";
+            progressPercent.innerText = "100%";
+            progressText.innerText = "Data parsing routines successfully complete.";
 
-        // If ECO PASSPORT metadata layout was detected, render the interactive allocation controls
-        if (isEcoPassportDetected) {
-            ecoPassportCard.classList.remove('hidden');
-            tableHeaderCatNo.classList.remove('hidden');
-            
-            // Sort array elements in strict ascending alphanumeric order
-            const sortedComps = Array.from(collectedComponentNumbers).sort((a, b) => {
-                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-            });
-
-            sortedComps.forEach(compNum => {
-                componentCatMapping[compNum] = ""; 
-
-                const uniqueRowContainer = document.createElement('div');
-                uniqueRowContainer.className = "flex items-center justify-between space-x-2 bg-white border border-slate-200 rounded-lg p-2 shadow-sm text-xs";
-                uniqueRowContainer.innerHTML = `
-                    <span class="font-mono bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">${compNum}</span>
-                    <div class="relative flex-1 max-w-[140px]">
-                        <select class="w-full bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
-                            <option value="">-- Select Cat --</option>
-                            <option value="1">1</option>
-                            <option value="2a">2a</option>
-                            <option value="2b">2b</option>
-                            <option value="3a">3a</option>
-                            <option value="3b">3b</option>
-                        </select>
-                    </div>
-                `;
-
-                const innerSelectEl = uniqueRowContainer.querySelector('select');
-                innerSelectEl.addEventListener('change', (e) => {
-                    componentCatMapping[compNum] = e.target.value;
-                    // Reset global view index if user deviates from uniform bulk setting parameters
-                    globalCatSelect.value = "";
-                    renderDataGrid();
+            if (isEcoPassportDetected) {
+                ecoPassportCard.classList.remove('hidden');
+                tableHeaderCatNo.classList.remove('hidden');
+                
+                const sortedComps = Array.from(collectedComponentNumbers).sort((a, b) => {
+                    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
                 });
 
-                ecoComponentRows.appendChild(uniqueRowContainer);
-            });
-        }
+                sortedComps.forEach(compNum => {
+                    componentCatMapping[compNum] = ""; 
 
-        // Build dynamic filtering selection nodes configurations layout
-        Array.from(uniqueFilterTests).sort().forEach(testItemKey => {
-            selectedTestsSet.add(testItemKey);
+                    const uniqueRowContainer = document.createElement('div');
+                    uniqueRowContainer.className = "flex items-center justify-between space-x-2 bg-white border border-slate-200 rounded-lg p-2 shadow-sm text-xs";
+                    uniqueRowContainer.innerHTML = `
+                        <span class="font-mono bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">${compNum}</span>
+                        <div class="relative flex-1 max-w-[140px]">
+                            <select class="w-full bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[11px] font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer">
+                                <option value="">-- Select Cat --</option>
+                                <option value="1">1</option>
+                                <option value="2a">2a</option>
+                                <option value="2b">2b</option>
+                                <option value="3a">3a</option>
+                                <option value="3b">3b</option>
+                            </select>
+                        </div>
+                    `;
 
-            const labelWrapper = document.createElement('label');
-            labelWrapper.className = "flex items-start space-x-2.5 p-1 rounded hover:bg-slate-50 cursor-pointer transition-colors";
-            labelWrapper.innerHTML = `
-                <input type="checkbox" value="${testItemKey}" checked class="rounded text-blue-600 border-slate-300 focus:ring-blue-500 mt-0.5 h-3.5 w-3.5">
-                <span class="text-[11px] font-medium text-slate-700 leading-tight select-none">${testItemKey}</span>
-            `;
+                    const innerSelectEl = uniqueRowContainer.querySelector('select');
+                    innerSelectEl.addEventListener('change', (e) => {
+                        componentCatMapping[compNum] = e.target.value;
+                        globalCatSelect.value = "";
+                        renderDataGrid();
+                    });
 
-            labelWrapper.querySelector('input').addEventListener('change', (e) => {
-                if (e.target.checked) selectedTestsSet.add(testItemKey);
-                else selectedTestsSet.delete(testItemKey);
-                updateDropdownLabel(); renderDataGrid();
-            });
-
-            checkboxContainer.appendChild(labelWrapper);
-        });
-
-        updateDropdownLabel();
-        renderDataGrid();
-    }
-
-    function updateDropdownLabel() {
-        const checkedCount = selectedTestsSet.size;
-        const totalCheckboxes = checkboxContainer.querySelectorAll('input[type="checkbox"]').length;
-        if (checkedCount === 0) {
-            dropdownLabel.innerText = "No tests selected (Empty)";
-            dropdownLabel.className = "truncate pr-2 text-slate-400 italic";
-        } else if (checkedCount === totalCheckboxes) {
-            dropdownLabel.innerText = "All Extracted Tests Selected";
-            dropdownLabel.className = "truncate pr-2 text-slate-700 font-semibold";
-        } else {
-            dropdownLabel.innerText = `${checkedCount} of ${totalCheckboxes} Selected`;
-            dropdownLabel.className = "truncate pr-2 text-blue-600 font-semibold";
-        }
-    }
-
-    function renderDataGrid() {
-        previewBody.innerHTML = '';
-        let counterMatchCount = 0;
-
-        masterExtractionList.forEach(rec => {
-            if (!selectedTestsSet.has(rec.testName)) return;
-
-            counterMatchCount++;
-            const tableRow = document.createElement('tr');
-            tableRow.className = "hover:bg-slate-50 transition-colors duration-150";
-            
-            let conditionalCatNoTd = "";
-            if (isEcoPassportDetected) {
-                const mappedCatValue = componentCatMapping[rec.compNum] || "";
-                conditionalCatNoTd = `<td class="px-6 py-4 text-slate-900 font-semibold"><span class="${mappedCatValue ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-400 border-slate-200'} border px-2 py-0.5 rounded text-[11px]}">${mappedCatValue || 'Unassigned'}</span></td>`;
+                    ecoComponentRows.appendChild(uniqueRowContainer);
+                });
             }
 
-            tableRow.innerHTML = `
-                <td class="px-6 py-4 text-slate-900 font-semibold tracking-tight">${rec.reportNo}</td>
-                <td class="px-6 py-4 text-slate-600">${rec.testName}</td>
-                <td class="px-6 py-4"><span class="inline-flex items-center bg-blue-50 text-blue-700 font-mono px-2.5 py-1 rounded-md text-xs font-bold border border-blue-100">${rec.compNum}</span></td>
-                ${conditionalCatNoTd}
-            `;
-            previewBody.appendChild(tableRow);
-        });
+            Array.from(uniqueFilterTests).sort().forEach(testItemKey => {
+                selectedTestsSet.add(testItemKey);
 
-        recordCount.innerText = counterMatchCount;
+                const labelWrapper = document.createElement('label');
+                labelWrapper.className = "flex items-start space-x-2.5 p-1 rounded hover:bg-slate-50 cursor-pointer transition-colors";
+                labelWrapper.innerHTML = `
+                    <input type="checkbox" value="${testItemKey}" checked class="rounded text-blue-600 border-slate-300 focus:ring-blue-500 mt-0.5 h-3.5 w-3.5">
+                    <span class="text-[11px] font-medium text-slate-700 leading-tight select-none">${testItemKey}</span>
+                `;
 
-        if (masterExtractionList.length > 0) {
-            actionsBar.classList.remove('hidden');
-            previewContainer.classList.remove('hidden');
-        }
-    }
+                labelWrapper.querySelector('input').addEventListener('change', (e) => {
+                    if (e.target.checked) selectedTestsSet.add(testItemKey);
+                    else selectedTestsSet.delete(testItemKey);
+                    updateDropdownLabel(); renderDataGrid();
+                });
 
-    // Spreadsheet Engine Download Logic
-    downloadBtn.addEventListener('click', () => {
-        const filteredTargetList = masterExtractionList.filter(item => selectedTestsSet.has(item.testName));
-        if (filteredTargetList.length === 0) return;
-
-        const structuredExportRows = filteredTargetList.map(item => {
-            let dynamicDataRow = {
-                "Report#": item.reportNo,
-                "Test": item.testName,
-                "T#": item.compNum
-            };
-            
-            if (isEcoPassportDetected) {
-                dynamicDataRow["Cat no."] = componentCatMapping[item.compNum] || "";
-            }
-            return dynamicDataRow;
-        });
-
-        const excelWorksheet = XLSX.utils.json_to_sheet(structuredExportRows);
-        const excelWorkbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(excelWorkbook, excelWorksheet, "LIMS Extract");
-
-        const columnWidths = {};
-        structuredExportRows.forEach(row => {
-            Object.keys(row).forEach(headerKey => {
-                const cellStringLength = String(row[headerKey] || '').length;
-                columnWidths[headerKey] = Math.max(columnWidths[headerKey] || headerKey.length, cellStringLength);
+                checkboxContainer.appendChild(labelWrapper);
             });
-        });
-        excelWorksheet['!cols'] = Object.keys(columnWidths).map(key => ({ wch: columnWidths[key] + 4 }));
 
-        const uniqueReportIdsInSet = Array.from(new Set(filteredTargetList.map(item => item.reportNo)));
-        let outputFilename = "Hohenstein_Extract_label";
-        if (uniqueReportIdsInSet.length === 1) {
-            outputFilename = `${uniqueReportIdsInSet[0]}_label`;
-        } else if (uniqueReportIdsInSet.length > 1) {
-            outputFilename = `${uniqueReportIdsInSet[0]}_multi_label`;
+            updateDropdownLabel();
+            renderDataGrid();
         }
 
-        XLSX.writeFile(excelWorkbook, `${outputFilename}.xlsx`);
-    });
-</script>
+        function updateDropdownLabel() {
+            const checkedCount = selectedTestsSet.size;
+            const totalCheckboxes = checkboxContainer.querySelectorAll('input[type="checkbox"]').length;
+            if (checkedCount === 0) {
+                dropdownLabel.innerText = "No tests selected (Empty)";
+                dropdownLabel.className = "truncate pr-2 text-slate-400 italic";
+            } else if (checkedCount === totalCheckboxes) {
+                dropdownLabel.innerText = "All Extracted Tests Selected";
+                dropdownLabel.className = "truncate pr-2 text-slate-700 font-semibold";
+            } else {
+                dropdownLabel.innerText = `${checkedCount} of ${totalCheckboxes} Selected`;
+                dropdownLabel.className = "truncate pr-2 text-blue-600 font-semibold";
+            }
+        }
+
+        function renderDataGrid() {
+            previewBody.innerHTML = '';
+            let counterMatchCount = 0;
+
+            masterExtractionList.forEach(rec => {
+                if (!selectedTestsSet.has(rec.testName)) return;
+
+                counterMatchCount++;
+                const tableRow = document.createElement('tr');
+                tableRow.className = "hover:bg-slate-50 transition-colors duration-150";
+                
+                let conditionalCatNoTd = "";
+                if (isEcoPassportDetected) {
+                    const mappedCatValue = componentCatMapping[rec.compNum] || "";
+                    conditionalCatNoTd = `<td class="px-6 py-4 text-slate-900 font-semibold"><span class="${mappedCatValue ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-400 border-slate-200'} border px-2 py-0.5 rounded text-[11px]">${mappedCatValue || 'Unassigned'}</span></td>`;
+                }
+
+                tableRow.innerHTML = `
+                    <td class="px-6 py-4 text-slate-900 font-semibold tracking-tight">${rec.reportNo}</td>
+                    <td class="px-6 py-4 text-slate-600">${rec.testName}</td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center bg-blue-50 text-blue-700 font-mono px-2.5 py-1 rounded-md text-xs font-bold border border-blue-100">${rec.compNum}</span></td>
+                    ${conditionalCatNoTd}
+                    <td class="px-6 py-4 font-mono text-xs text-slate-800 font-bold">${rec.qrCodeInfo}</td>
+                `;
+                previewBody.appendChild(tableRow);
+            });
+
+            recordCount.innerText = counterMatchCount;
+
+            if (masterExtractionList.length > 0) {
+                actionsBar.classList.remove('hidden');
+                previewContainer.classList.remove('hidden');
+            }
+        }
+
+        // Spreadsheet Engine Download Logic
+        downloadBtn.addEventListener('click', () => {
+            const filteredTargetList = masterExtractionList.filter(item => selectedTestsSet.has(item.testName));
+            if (filteredTargetList.length === 0) return;
+
+            const structuredExportRows = filteredTargetList.map(item => {
+                let dynamicDataRow = {
+                    "Report#": item.reportNo,
+                    "Test": item.testName,
+                    "T#": item.compNum
+                };
+                
+                if (isEcoPassportDetected) {
+                    dynamicDataRow["Cat no."] = componentCatMapping[item.compNum] || "";
+                }
+
+                dynamicDataRow["QR"] = item.qrCodeInfo;
+                return dynamicDataRow;
+            });
+
+            const excelWorksheet = XLSX.utils.json_to_sheet(structuredExportRows);
+            const excelWorkbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(excelWorkbook, excelWorksheet, "LIMS Extract");
+
+            const columnWidths = {};
+            structuredExportRows.forEach(row => {
+                Object.keys(row).forEach(headerKey => {
+                    const cellStringLength = String(row[headerKey] || '').length;
+                    columnWidths[headerKey] = Math.max(columnWidths[headerKey] || headerKey.length, cellStringLength);
+                });
+            });
+            excelWorksheet['!cols'] = Object.keys(columnWidths).map(key => ({ wch: columnWidths[key] + 4 }));
+
+            const uniqueReportIdsInSet = Array.from(new Set(filteredTargetList.map(item => item.reportNo)));
+            let outputFilename = "Hohenstein_Extract_label";
+            if (uniqueReportIdsInSet.length === 1) {
+                outputFilename = `${uniqueReportIdsInSet[0]}_label`;
+            } else if (uniqueReportIdsInSet.length > 1) {
+                outputFilename = `${uniqueReportIdsInSet[0]}_multi_label`;
+            }
+
+            XLSX.writeFile(excelWorkbook, `${outputFilename}.xlsx`);
+        });
+    </script>
 </body>
 </html>
